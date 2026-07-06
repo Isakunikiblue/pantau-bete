@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard BETE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    /* 1. TEMA DAN WARNA GLOBAL (MURNI ASLI) */
+    body {
+      background-color: #0B132B; 
+      color: #F4F5F7; 
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    /* LOGIN PANEL STYLE (MIGRASI DARI LOGIN.HTML) */
+    #login-container {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #0B132B 0%, #1C2541 100%);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      background: #FFFFFF;
+      color: #1C2541;
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      border-top: 5px solid #FF0055;
+    }
+    .login-btn {
+      background: #FF0055;
+      color: white;
+      font-weight: 600;
+      border: none;
+      transition: all 0.3s;
+    }
+    .login-btn:hover {
+      background: #C0003E;
+      color: white;
+    }
+
+    /* FAKE LOADER UTAMA */
+    #loader {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(11, 19, 43, 0.95);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .spinner-neon {
+      width: 3rem;
+      height: 3rem;
+      border: 0.25em solid rgba(255, 0, 85, 0.2);
+      border-top: 0.25em solid #FF0055;
+      border-radius: 50%;
+      animation: spin-neon 1s linear infinite;
+    }
+    @keyframes spin-neon {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* MAIN DASHBOARD CONTENT */
+    #dashboard-wrapper {
+      display: none; 
+    }
+    .sidebar {
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      width: 260px;
+      background: #1C2541;
+      border-right: 3px solid #FF0055;
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar .nav-link {
+      color: #A5A9B4;
+      padding: 12px 20px;
+      margin: 5px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .sidebar .nav-link.active {
+      background: #FF0055;
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+    }
+    .main-content {
+      margin-left: 260px;
+      padding: 30px;
+    }
+    .card-custom {
+      background: #FFFFFF;
+      color: #1C2541;
+      border: none;
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    .card-custom-vs {
+      background: #FFFFFF;
+      color: #1C2541;
+      border: 3px solid #FF0055;
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 25px rgba(255, 0, 85, 0.15);
+    }
+    .card-kpi {
+      background: #1C2541;
+      color: #FFFFFF;
+      border-top: 4px solid #FF0055;
+    }
+    .card-kpi h4 {
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 1.8rem;
+    }
+    .kpi-sub-title {
+      color: #FF5A85 !important;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .kpi-sub-value {
+      color: #FFFFFF !important;
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+
+    /* KPI CARD MODERN */
+    .kpi-card {
+      background: linear-gradient(155deg, #1C2541 0%, #131A30 100%);
+      border-radius: 16px;
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+      border-top: 3px solid #FF0055;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      height: 100%;
+    }
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(255, 0, 85, 0.2);
+    }
+    .kpi-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 0, 85, 0.15);
+      color: #FF5A85;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      margin-bottom: 16px;
+    }
+    .kpi-label {
+      color: #9AA3C0;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .kpi-value {
+      color: #FFFFFF;
+      font-size: 1.9rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    #topAgentTable .empty-state, #modalTableBody .empty-state {
+      color: #6B7280;
+    }
+    .btn-download-chart {
+      background: #F4F5F7;
+      border: 1px solid #D1D5DB;
+      color: #1C2541;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .btn-download-chart:hover {
+      background: #FF0055;
+      border-color: #FF0055;
+      color: #fff;
+    }
+    .form-select, .form-control {
+      background-color: #F4F5F7;
+      border: 1px solid #D1D5DB;
+      color: #1C2541;
+      font-weight: 500;
+    }
+    .text-glow-red {
+      color: #FF0055 !important;
+      text-shadow: 0 0 10px rgba(255, 0, 85, 0.4);
+    }
+    .text-navy {
+      color: #1C2541 !important;
+    }
+    .table-custom-clean {
+      width: 100%;
+      color: #1C2541 !important;
+    }
+    .table-custom-clean th {
+      background-color: #1C2541 !important;
+      color: #FFFFFF !important;
+      padding: 12px;
+      font-weight: 600;
+    }
+    .table-custom-clean td {
+      padding: 12px;
+      border-bottom: 1px solid #E2E8F0;
+      color: #2D3748 !important;
+      font-weight: 500;
+    }
+    .agent-name-style {
+      color: #1C2541 !important;
+      font-weight: 700;
+    }
+    .unit-name-style {
+      color: #4A5568 !important;
+      font-weight: 500;
+    }
+    .clickable-ticket {
+      color: #FF0055;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .clickable-ticket:hover {
+      color: #C0003E;
+    }
+    .modal-content {
+      color: #1C2541 !important;
+    }
+    .modal-table th {
+      background-color: #1C2541 !important;
+      color: #ffffff !important;
+    }
+    .search-sm-box {
+      max-width: 280px;
+    }
+
+    /* RESPONSIVE / MOBILE STYLE */
+    .mobile-topbar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: #1C2541;
+      border-bottom: 3px solid #FF0055;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 1040;
+    }
+    .mobile-topbar .btn-hamburger {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.3rem;
+      padding: 4px 8px;
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 1045;
+    }
+    .sidebar-overlay.show { display: block; }
+    @media (max-width: 991.98px) {
+      .mobile-topbar { display: flex; }
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.28s ease;
+        z-index: 1050;
+        width: 240px;
+      }
+      .sidebar.show { transform: translateX(0); }
+      .main-content {
+        margin-left: 0;
+        padding: 16px;
+      }
+      .kpi-value { font-size: 1.5rem; }
+      .kpi-label { font-size: 0.65rem; }
+      .kpi-card { padding: 16px 14px; }
+      .card-custom, .card-custom-vs { padding: 16px; }
+      h2.fw-bold { font-size: 1.4rem; }
+    }
+    .badge-solid-gray {
+      background-color: #6c757d !important;
+      color: #ffffff !important;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="login-container">
+    <div class="login-card text-center">
+      <div class="mb-3">
+        <i class="fa-solid fa-shield-halved text-glow-red" style="font-size: 3rem;"></i>
+      </div>
+      <h3 class="fw-bold text-navy m-0">DASHBOARD BETE</h3>
+      <p class="text-muted small mb-4">Bad Ticket System Login Panel</p>
+      
+      <div id="loginAlert" class="alert alert-danger d-none p-2 small" role="alert">
+        Username atau Password salah!
+      </div>
+      
+      <form id="formLoginPanel" onsubmit="handleLoginRequest(event)">
+        <div class="text-start mb-3">
+          <label class="form-label small fw-bold text-muted">Username</label>
+          <input type="text" id="loginUser" class="form-control" placeholder="Masukkan username..." required>
+        </div>
+        <div class="text-start mb-4">
+          <label class="form-label small fw-bold text-muted">Password</label>
+          <input type="password" id="loginPass" class="form-control" placeholder="Masukkan password..." required>
+        </div>
+        <button type="submit" id="btnLogin" class="btn login-btn w-100 py-2">
+          <i class="fa-solid fa-right-to-bracket me-2"></i>Masuk Sistem
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="loader" style="display: none;">
+    <div class="spinner-neon mb-3"></div>
+    <h5 class="fw-bold text-white m-0" id="loaderText">Memeriksa Akses Kredensial...</h5>
+  </div>
+
+  <div id="dashboard-wrapper">
+    <div class="sidebar">
+      <div class="px-4 mb-4 text-center">
+        <h4 class="text-white fw-bold">DASHBOARD <span class="text-glow-red">BETE</span></h4>
+        <span class="badge bg-danger px-3 py-2">Bad Ticket System</span>
+      </div>
+      <nav class="nav flex-column">
+        <a class="nav-link active" href="#" onclick="if(window.innerWidth < 992) toggleSidebar(); return false;"><i class="fa-solid fa-chart-pie me-2"></i> Dashboard</a>
+      </nav>
+      <div class="mt-auto px-3 pb-4">
+        <a class="nav-link" href="#" onclick="handleLogout(); return false;" style="color:#FF5A85;">
+          <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+        </a>
+      </div>
+    </div>
+    
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    
+    <div class="mobile-topbar">
+      <button class="btn-hamburger" onclick="toggleSidebar()" aria-label="Buka menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <h6 class="text-white fw-bold m-0">DASHBOARD <span class="text-glow-red">BETE</span></h6>
+      <span style="width:28px;"></span>
+    </div>
+
+    <div class="main-content">
+      <div id="page-dashboard">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="fw-bold text-white">Dashboard Overview</h2>
+        </div>
+
+        <div class="card-custom">
+          <h5 class="text-navy mb-3"><i class="fa-solid fa-filter text-glow-red me-2"></i>Filter Data</h5>
+          <div class="row g-3">
+            <div class="col-lg-2 col-md-4 col-6">
+              <label class="form-label text-muted small fw-bold">Tanggal (Kolom A)</label>
+              <select id="filTanggal" class="form-select"><option value="">Semua Tanggal</option></select>
+            </div>
+            <div class="col-lg-2 col-md-4 col-6">
+              <label class="form-label text-muted small fw-bold">Bulan (Kolom B)</label>
+              <select id="filBulan" class="form-select"><option value="">Semua Bulan</option></select>
+            </div>
+            <div class="col-lg-2 col-md-4 col-6">
+              <label class="form-label text-muted small fw-bold">Tahun (Kolom C)</label>
+              <select id="filTahun" class="form-select"><option value="">Semua Tahun</option></select>
+            </div>
+            <div class="col-lg-3 col-md-6 col-6">
+              <label class="form-label text-muted small fw-bold">Unit Name (Kolom J)</label>
+              <select id="filUnit" class="form-select"><option value="">Semua Unit</option></select>
+            </div>
+            <div class="col-lg-3 col-md-6 col-6">
+              <label class="form-label text-muted small fw-bold">Kategori (Kolom L)</label>
+              <select id="filKategoriL" class="form-select"><option value="">Semua Kategori</option></select>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-12 d-flex gap-2 justify-content-end">
+              <button class="btn btn-sm px-4 fw-bold" style="background:#FF0055; color:#fff;" onclick="filterAndRender()">
+                <i class="fa-solid fa-magnifying-glass me-1"></i> Cari
+              </button>
+              <button class="btn btn-sm btn-outline-secondary px-4 fw-bold" onclick="resetFilters()">
+                <i class="fa-solid fa-rotate-left me-1"></i> Reset Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <div class="kpi-card">
+              <div class="kpi-icon"><i class="fa-solid fa-headset"></i></div>
+              <div class="kpi-label">Call Center Semarang</div>
+              <div class="kpi-value" id="kpiCCSemarang">-</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="kpi-card">
+              <div class="kpi-icon"><i class="fa-solid fa-headset"></i></div>
+              <div class="kpi-label">Call Center Bandung</div>
+              <div class="kpi-value" id="kpiCCBandung">-</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="kpi-card">
+              <div class="kpi-icon"><i class="fa-solid fa-comment-dots"></i></div>
+              <div class="kpi-label">Ecare Semarang</div>
+              <div class="kpi-value" id="kpieCareSemarang">-</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="kpi-card">
+              <div class="kpi-icon"><i class="fa-solid fa-comment-dots"></i></div>
+              <div class="kpi-label">Ecare Bandung</div>
+              <div class="kpi-value" id="kpieCareBandung">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-md-12">
+            <div class="card-custom">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="text-navy m-0"><i class="fa-solid fa-calendar-days text-glow-red me-2"></i>Trend Bad Tiket Monthly</h5>
+                <button class="btn-download-chart" onclick="downloadChartPng('monthly', 'Trend_Bad_Tiket_Monthly')">
+                  <i class="fa-solid fa-download me-1"></i>PNG
+                </button>
+              </div>
+              <canvas id="chartMonthly" height="90"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-custom-vs mt-4">
+          <div class="row align-items-center mb-3 g-2">
+            <div class="col-sm-6">
+              <h5 class="text-navy m-0"><i class="fa-solid fa-code-compare text-glow-red me-2"></i>Analisis Bad Tiket - Perbandingan Bulan</h5>
+            </div>
+            <div class="col-sm-6 d-flex gap-2 justify-content-end align-items-center flex-wrap">
+              <div>
+                <select id="vsBulanBefore" class="form-select form-select-sm" onchange="renderVsChart()"></select>
+              </div>
+              <div class="fw-bold text-navy text-center px-1">VS</div>
+              <div>
+                <select id="vsBulanAfter" class="form-select form-select-sm" onchange="renderVsChart()"></select>
+              </div>
+              <div>
+                <select id="vsFilterKolomL" class="form-select form-select-sm" onchange="renderVsChart()">
+                  <option value="">Semua Kategori (Kolom L)</option>
+                </select>
+              </div>
+              <button class="btn-download-chart" onclick="downloadChartPng('comparisonVs', 'Perbandingan_Bad_Tiket_Monthly')">
+                <i class="fa-solid fa-download me-1"></i>PNG
+              </button>
+            </div>
+          </div>
+          <canvas id="comparisonVs" height="100"></canvas>
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-lg-6">
+            <div class="card-custom-vs">
+              <div class="row align-items-center mb-3 g-2">
+                <div class="col-12">
+                  <h6 class="text-navy fw-bold mb-2"><i class="fa-solid fa-user-tie text-glow-red me-2"></i>H2H Supervisor (Kolom I)</h6>
+                </div>
+                <div class="col-12 d-flex gap-1 flex-wrap">
+                  <select id="vsSpvNama" class="form-select form-select-sm flex-grow-1" onchange="if(hasSearched) renderSpvVsChart();"></select>
+                  <select id="vsSpvBulanBefore" class="form-select form-select-sm" onchange="if(hasSearched) renderSpvVsChart();"></select>
+                  <select id="vsSpvBulanAfter" class="form-select form-select-sm" onchange="if(hasSearched) renderSpvVsChart();"></select>
+                  <select id="vsSpvKolomL" class="form-select form-select-sm" onchange="if(hasSearched) renderSpvVsChart();">
+                    <option value="">Semua Kategori (L)</option>
+                  </select>
+                </div>
+              </div>
+              <canvas id="spvVs" height="150"></canvas>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="card-custom-vs">
+              <div class="row align-items-center mb-3 g-2">
+                <div class="col-12">
+                  <h6 class="text-navy fw-bold mb-2"><i class="fa-solid fa-users text-glow-red me-2"></i>H2H Team Leader (Kolom H)</h6>
+                </div>
+                <div class="col-12 d-flex gap-1 flex-wrap">
+                  <select id="vsTlNama" class="form-select form-select-sm flex-grow-1" onchange="if(hasSearched) renderTlVsChart();"></select>
+                  <select id="vsTlBulanBefore" class="form-select form-select-sm" onchange="if(hasSearched) renderTlVsChart();"></select>
+                  <select id="vsTlBulanAfter" class="form-select form-select-sm" onchange="if(hasSearched) renderTlVsChart();"></select>
+                  <select id="vsTlKolomL" class="form-select form-select-sm" onchange="if(hasSearched) renderTlVsChart();">
+                    <option value="">Semua Kategori (L)</option>
+                  </select>
+                </div>
+              </div>
+              <canvas id="tlVs" height="150"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-custom mt-4">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+              <h5 class="text-navy m-0"><i class="fa-solid fa-users text-glow-red me-2"></i>Peringkat Temuan Bad Ticket Agent</h5>
+              <input type="text" id="searchSIAD" class="form-control form-control-sm search-sm-box" placeholder="Cari Nama / SIAD / Keyword..." onkeyup="filterAndRender()">
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <select id="filAgentKategoriL" class="form-select form-select-sm" style="width:170px;" onchange="filterAndRender()">
+                <option value="">Semua Kategori (L)</option>
+              </select>
+              <button class="btn-download-chart" onclick="downloadTableAsPng()">
+                <i class="fa-solid fa-download me-1"></i>PNG
+              </button>
+            </div>
+          </div>
+          
+          <div class="table-responsive rounded-3" style="max-height: 500px; overflow-y: auto;">
+            <table class="table table-custom-clean align-middle mb-0" id="topAgentTable">
+              <thead>
+                <tr>
+                  <th width="8%">No</th>
+                  <th>Nama Agent (G)</th>
+                  <th>Unit Name (J)</th>
+                  <th class="text-end" width="20%">Total Temuan</th>
+                </tr>
+              </thead>
+              <tbody id="topAgentBody">
+                <tr><td colspan="4" class="text-center empty-state py-4">Silakan klik tombol "Cari" untuk memuat analisis data.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="agentDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title fw-bold" id="modalAgentTitle">Detail Temuan Bad Ticket</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body bg-light">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="badge bg-danger fs-6 px-3" id="modalTotalCount">Total: 0 tiket</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered modal-table align-middle">
+              <thead>
+                <tr>
+                  <th>Tanggal (A)</th>
+                  <th>Bulan (B)</th>
+                  <th>Nama Agent (G)</th>
+                  <th>Unit Name (J)</th>
+                  <th>No Tiket (E)</th>
+                  <th>KIP (K)</th>
+                  <th>Kategori (L)</th>
+                  <th>Detil Temuan (M)</th>
+                </tr>
+              </thead>
+              <tbody id="modalTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <script>
+    // =====================================================================
+    // CONFIG URL BACKEND WEB APP GOOGLE APPS SCRIPT
+    // =====================================================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHtbxZ55fKY6VOXuOM422FhVtZVE1nkS9i2h_RHSSJA5iG-85MUQ4aplSt78UlAkk/exec";
+
+    // Variabel Penampung State Array Internal
+    let allRecords = [];
+    let currentFilteredRecords = [];
+    let hasSearched = false;
+    let activeCharts = {};
+    let bulanTerurutGlobal = [];
+
+    // Teks Pengurutan Bulan Indonesia secara Kronologis
+    const indonesianMonths = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+    function sortBulanIndo(arr) {
+      return arr.sort((a, b) => {
+        let idxA = indonesianMonths.indexOf(String(a).trim().toUpperCase());
+        let idxB = indonesianMonths.indexOf(String(b).trim().toUpperCase());
+        return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+      });
+    }
+
+    // --- SCRIPT CONTROLLER AKSES LOGIN DI GITHUB/VERCEL ---
+    function handleLoginRequest(e) {
+      e.preventDefault();
+      const user = document.getElementById('loginUser').value.trim();
+      const pass = document.getElementById('loginPass').value.trim();
+      const btn = document.getElementById('btnLogin');
+      const alertBox = document.getElementById('loginAlert');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+      alertBox.classList.add('d-none');
+
+      document.getElementById('loaderText').innerText = "Memeriksa Kredensial...";
+      document.getElementById('loader').style.display = 'flex';
+
+      // POST ke Apps Script
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify({ action: "login", username: user, password: pass }),
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
+      })
+      .then(res => res.json())
+      .then(result => {
+        if (result && result.success) {
+          document.getElementById('loaderText').innerText = "Mengunduh Database Google Sheets...";
+          fetchDashboardRecords();
+        } else {
+          document.getElementById('loader').style.display = 'none';
+          alertBox.classList.remove('d-none');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i>Masuk Sistem';
+        }
+      })
+      .catch(err => {
+        document.getElementById('loader').style.display = 'none';
+        alertBox.innerText = "Koneksi Bermasalah / Izinkan Akses CORS.";
+        alertBox.classList.remove('d-none');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i>Masuk Sistem';
+        console.error(err);
+      });
+    }
+
+    function fetchDashboardRecords() {
+      fetch(SCRIPT_URL + "?action=getData")
+      .then(res => res.json())
+      .then(response => {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('dashboard-wrapper').style.display = 'block';
+
+        if(response.error) {
+          alert("Error Database: " + response.error);
+          return;
+        }
+
+        allRecords = response.rawRecords || [];
+        initDropdownOptions(response.filters || {});
+        showEmptyState();
+      })
+      .catch(err => {
+        document.getElementById('loader').style.display = 'none';
+        alert("Fatal Error Memuat Data Backend.");
+        console.error(err);
+      });
+    }
+
+    function handleLogout() {
+      if (!confirm('Yakin ingin logout dari Dashboard BETE?')) return;
+      document.getElementById('dashboard-wrapper').style.display = 'none';
+      document.getElementById('login-container').style.display = 'flex';
+      document.getElementById('loginUser').value = '';
+      document.getElementById('loginPass').value = '';
+      document.getElementById('loginAlert').classList.add('d-none');
+      
+      const btnLogin = document.getElementById('btnLogin');
+      btnLogin.disabled = false;
+      btnLogin.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i>Masuk Sistem';
+      
+      allRecords = [];
+      currentFilteredRecords = [];
+      hasSearched = false;
+      Object.keys(activeCharts).forEach(key => destroyChart(key));
+      activeCharts = {};
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebarOverlay').classList.toggle('show');
+      document.querySelector('.sidebar').classList.toggle('show');
+    }
+
+    // --- INJECT DATA FILTERS TO DOM DRAGONS ---
+    function initDropdownOptions(filters) {
+      const pop = (id, arr) => {
+        const select = document.getElementById(id);
+        select.innerHTML = select.options[0].outerHTML;
+        arr.forEach(val => {
+          if(val && val.toString().trim() !== "") {
+            select.options[select.options.length] = new Option(val, val);
+          }
+        });
+      };
+
+      const bulanTerurut = sortBulanIndo(filters.bulan || []);
+      bulanTerurutGlobal = bulanTerurut;
+
+      pop('filTanggal', filters.tanggal);
+      pop('filBulan', bulanTerurut);
+      pop('filTahun', filters.tahun);
+      pop('filUnit', filters.unit);
+
+      // Extract unik Kategori L (Indeks ke-11)
+      const setKatL = new Set();
+      const setSpv = new Set();
+      const setTl = new Set();
+
+      allRecords.forEach(row => {
+        if(row[11]) setKatL.add(row[11].toString().trim());
+        if(row[8]) setSpv.add(row[8].toString().trim());
+        if(row[7]) setTl.add(row[7].toString().trim());
+      });
+
+      pop('filKategoriL', Array.from(setKatL).sort());
+      pop('filAgentKategoriL', Array.from(setKatL).sort());
+      pop('vsFilterKolomL', Array.from(setKatL).sort());
+      pop('vsSpvKolomL', Array.from(setKatL).sort());
+      pop('vsTlKolomL', Array.from(setKatL).sort());
+
+      pop('vsSpvNama', Array.from(setSpv).sort());
+      pop('vsTlNama', Array.from(setTl).sort());
+
+      // Isi Filter Dropdown Pasangan Bulan
+      const fillMonthPair = (idBefore, idAfter) => {
+        const selBefore = document.getElementById(idBefore);
+        const selAfter = document.getElementById(idAfter);
+        selBefore.innerHTML = "";
+        selAfter.innerHTML = "";
+        bulanTerurutGlobal.forEach((val) => {
+          if (val && val.toString().trim() !== "") {
+            selBefore.options[selBefore.options.length] = new Option(val, val);
+            selAfter.options[selAfter.options.length] = new Option(val, val);
+          }
+        });
+        if (selBefore.options.length > 0) selBefore.selectedIndex = 0;
+        if (selAfter.options.length > 1) selAfter.selectedIndex = 1;
+        else if (selAfter.options.length > 0) selAfter.selectedIndex = 0;
+      };
+
+      fillMonthPair('vsBulanBefore', 'vsBulanAfter');
+      fillMonthPair('vsSpvBulanBefore', 'vsSpvBulanAfter');
+      fillMonthPair('vsTlBulanBefore', 'vsTlBulanAfter');
+    }
+
+    function showEmptyState() {
+      document.getElementById('topAgentBody').innerHTML = `<tr><td colspan="4" class="text-center empty-state py-4"><i class="fa-solid fa-circle-info me-1"></i> Silakan klik tombol "Cari" untuk memuat analisis data.</td></tr>`;
+      ['kpiCCSemarang', 'kpiCCBandung', 'kpieCareSemarang', 'kpieCareBandung'].forEach(id => {
+        document.getElementById(id).innerText = "-";
+      });
+      destroyChart('monthly');
+      destroyChart('comparisonVs');
+      destroyChart('spvVs');
+      destroyChart('tlVs');
+    }
+
+    function resetFilters() {
+      document.getElementById('filTanggal').value = "";
+      document.getElementById('filBulan').value = "";
+      document.getElementById('filTahun').value = "";
+      document.getElementById('filUnit').value = "";
+      document.getElementById('filKategoriL').value = "";
+      document.getElementById('searchSIAD').value = "";
+      document.getElementById('filAgentKategoriL').value = "";
+      hasSearched = false;
+      showEmptyState();
+    }
+
+    function destroyChart(key) {
+      if(activeCharts[key]) {
+        activeCharts[key].destroy();
+        delete activeCharts[key];
+      }
+    }
+
+    // --- MAIN ENGINE: FILTER & RENDER ENGINE ARRAYS ---
+    function filterAndRender() {
+      hasSearched = true;
+      const fTgl = document.getElementById('filTanggal').value.trim();
+      const fBln = document.getElementById('filBulan').value.trim();
+      const fThn = document.getElementById('filTahun').value.trim();
+      const fUnit = document.getElementById('filUnit').value.trim();
+      const fKatL = document.getElementById('filKategoriL').value.trim();
+      
+      const sSIAD = document.getElementById('searchSIAD').value.trim().toLowerCase();
+      const fAgentKatL = document.getElementById('filAgentKategoriL').value.trim();
+
+      // Jalankan filter Single-Pass
+      currentFilteredRecords = allRecords.filter(row => {
+        if(fTgl && String(row[0]).trim() !== fTgl) return false;
+        if(fBln && String(row[1]).trim() !== fBln) return false;
+        if(fThn && String(row[2]).trim() !== fThn) return false;
+        if(fUnit && String(row[9]).trim() !== fUnit) return false;
+        if(fKatL && String(row[11]).trim() !== fKatL) return false;
+        return true;
+      });
+
+      calculateKpiRatios(currentFilteredRecords);
+      renderMonthlyTrendChart(currentFilteredRecords);
+      renderVsChart();
+      renderSpvVsChart();
+      renderTlVsChart();
+
+      // Render Peringkat Table Agent dengan Live Search filter internal terpisah
+      let tableRows = currentFilteredRecords;
+      if (sSIAD || fAgentKatL) {
+        tableRows = tableRows.filter(row => {
+          if (fAgentKatL && String(row[11]).trim() !== fAgentKatL) return false;
+          if (sSIAD) {
+            let matchText = (String(row[6]) + " " + String(row[5]) + " " + String(row[9]) + " " + String(row[12])).toLowerCase();
+            if (!matchText.includes(sSIAD)) return false;
+          }
+          return true;
+        });
+      }
+      renderAgentRankTable(tableRows);
+    }
+
+    // --- LOGIKA HITUNG RASIO KPI (MURNI ASLI) ---
+    function calculateKpiRatios(data) {
+      let totalAll = data.length;
+      if (totalAll === 0) {
+        ['kpiCCSemarang', 'kpiCCBandung', 'kpieCareSemarang', 'kpieCareBandung'].forEach(id => {
+          document.getElementById(id).innerText = "0%";
+        });
+        return;
+      }
+      
+      let ccSemarang = 0, ccBandung = 0, ecareSemarang = 0, ecareBandung = 0;
+      data.forEach(row => {
+        let unit = String(row[9]).trim().toUpperCase();
+        if(unit.includes("CALL CENTER SEMARANG") || unit.includes("CC SEMARANG")) ccSemarang++;
+        else if(unit.includes("CALL CENTER BANDUNG") || unit.includes("CC BANDUNG")) ccBandung++;
+        else if(unit.includes("ECARE SEMARANG")) ecareSemarang++;
+        else if(unit.includes("ECARE BANDUNG")) ecareBandung++;
+      });
+
+      const pct = (val) => ((val / totalAll) * 100).toFixed(1) + "%";
+      document.getElementById('kpiCCSemarang').innerText = pct(ccSemarang);
+      document.getElementById('kpiCCBandung').innerText = pct(ccBandung);
+      document.getElementById('kpieCareSemarang').innerText = pct(ecareSemarang);
+      document.getElementById('kpieCareBandung').innerText = pct(ecareBandung);
+    }
+
+    // --- RENDER GRAFIK CHART.JS (MURNI ASLI) ---
+    function renderMonthlyTrendChart(data) {
+      destroyChart('monthly');
+      
+      let counts = {};
+      bulanTerurutGlobal.forEach(m => counts[m] = 0);
+      data.forEach(row => {
+        let m = String(row[1]).trim().toUpperCase();
+        if(counts[m] !== undefined) counts[m]++;
+      });
+
+      const ctx = document.getElementById('chartMonthly').getContext('2d');
+      activeCharts['monthly'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: bulanTerurutGlobal,
+          datasets: [{
+            label: 'Jumlah Kasus Bad Ticket',
+            data: bulanTerurutGlobal.map(m => counts[m]),
+            backgroundColor: '#FF0055',
+            borderRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { ticks: { color: '#1C2541', stepSize: 1 }, beginAtZero: true },
+            x: { ticks: { color: '#1C2541', font: { weight: 'bold' } } }
+          }
+        }
+      });
+    }
+
+    function renderVsChart() {
+      destroyChart('comparisonVs');
+      const vsBefore = document.getElementById('vsBulanBefore').value.trim();
+      const vsAfter = document.getElementById('vsBulanAfter').value.trim();
+      const vsFilterL = document.getElementById('vsFilterKolomL').value.trim().toUpperCase();
+      const activeUnit = document.getElementById('filUnit').value.trim().toUpperCase();
+
+      let dates1to31 = Array.from({length: 31}, (_, i) => String(i + 1));
+      let countsBefore = {}, countsAfter = {};
+      dates1to31.forEach(d => { countsBefore[d] = 0; countsAfter[d] = 0; });
+
+      allRecords.forEach(row => {
+        let rowBln = String(row[1]).trim();
+        let rowL = String(row[11]).trim().toUpperCase();
+        let rowUnit = String(row[9]).trim().toUpperCase();
+        let rowTgl = String(row[0]).trim();
+
+        let matchL = (vsFilterL === "" || rowL === vsFilterL);
+        let matchUnit = (activeUnit === "" || rowUnit === activeUnit);
+
+        if(matchL && matchUnit) {
+          if(rowBln === vsBefore && countsBefore[rowTgl] !== undefined) countsBefore[rowTgl]++;
+          if(rowBln === vsAfter && countsAfter[rowTgl] !== undefined) countsAfter[rowTgl]++;
+        }
+      });
+
+      const ctx = document.getElementById('comparisonVs').getContext('2d');
+      activeCharts['comparisonVs'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dates1to31,
+          datasets: [
+            {
+              label: vsBefore ? `Bulan: ${vsBefore}` : 'Bulan Sebelum',
+              data: dates1to31.map(d => countsBefore[d]),
+              backgroundColor: '#FF0055',
+              borderRadius: 4, barPercentage: 0.8, categoryPercentage: 0.8
+            },
+            {
+              label: vsAfter ? `Bulan: ${vsAfter}` : 'Bulan Sesudah',
+              data: dates1to31.map(d => countsAfter[d]),
+              backgroundColor: '#1C2541',
+              borderRadius: 4, barPercentage: 0.8, categoryPercentage: 0.8
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true, labels: { color: '#1C2541', font: { weight: 'bold' } } } },
+          scales: {
+            y: { ticks: { color: '#1C2541', stepSize: 1 }, beginAtZero: true, title: { display: true, text: 'Jumlah Tiket', color: '#1C2541', font: { weight: 'bold' } } },
+            x: { ticks: { color: '#1C2541', font: { weight: 'bold' } } }
+          }
+        }
+      });
+    }
+
+    function renderSpvVsChart() {
+      destroyChart('spvVs');
+      const namaSpv = document.getElementById('vsSpvNama').value.trim().toUpperCase();
+      const vsBefore = document.getElementById('vsSpvBulanBefore').value.trim();
+      const vsAfter = document.getElementById('vsSpvBulanAfter').value.trim();
+      const filterL = document.getElementById('vsSpvKolomL').value.trim().toUpperCase();
+
+      let dates1to31 = Array.from({length: 31}, (_, i) => String(i + 1));
+      let countsBefore = {}, countsAfter = {};
+      dates1to31.forEach(d => { countsBefore[d] = 0; countsAfter[d] = 0; });
+
+      allRecords.forEach(row => {
+        let rowBln = String(row[1]).trim();
+        let rowSpv = String(row[8]).trim().toUpperCase();
+        let rowL = String(row[11]).trim().toUpperCase();
+        let rowTgl = String(row[0]).trim();
+
+        let matchSpv = (namaSpv === "" || rowSpv === namaSpv);
+        let matchL = (filterL === "" || rowL === filterL);
+
+        if (matchSpv && matchL) {
+          if(rowBln === vsBefore && countsBefore[rowTgl] !== undefined) countsBefore[rowTgl]++;
+          if(rowBln === vsAfter && countsAfter[rowTgl] !== undefined) countsAfter[rowTgl]++;
+        }
+      });
+
+      const ctx = document.getElementById('spvVs').getContext('2d');
+      activeCharts['spvVs'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dates1to31,
+          datasets: [
+            { label: `Bulan ${vsBefore}`, data: dates1to31.map(d => countsBefore[d]), backgroundColor: '#FF0055', borderRadius: 4 },
+            { label: `Bulan ${vsAfter}`, data: dates1to31.map(d => countsAfter[d]), backgroundColor: '#1C2541', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true, labels: { color: '#1C2541', font: { weight: 'bold' } } } },
+          scales: {
+            y: { ticks: { color: '#1C2541', stepSize: 1 }, beginAtZero: true, title: { display: true, text: 'Jumlah Tiket', color: '#1C2541', font: { weight: 'bold' } } },
+            x: { ticks: { color: '#1C2541', font: { weight: 'bold' } } }
+          }
+        }
+      });
+    }
+
+    function renderTlVsChart() {
+      destroyChart('tlVs');
+      const vsBefore = document.getElementById('vsTlBulanBefore').value.trim();
+      const vsAfter = document.getElementById('vsTlBulanAfter').value.trim();
+      const namaTl = document.getElementById('vsTlNama').value.trim().toUpperCase();
+      const filterL = document.getElementById('vsTlKolomL').value.trim().toUpperCase();
+
+      let dates1to31 = Array.from({length: 31}, (_, i) => String(i + 1));
+      let countsBefore = {}, countsAfter = {};
+      dates1to31.forEach(d => { countsBefore[d] = 0; countsAfter[d] = 0; });
+
+      allRecords.forEach(row => {
+        let rowBln = String(row[1]).trim();
+        let rowTl = String(row[7]).trim().toUpperCase();
+        let rowL = String(row[11]).trim().toUpperCase();
+        let rowTgl = String(row[0]).trim();
+
+        let matchTl = (namaTl === "" || rowTl === namaTl);
+        let matchL = (filterL === "" || rowL === filterL);
+
+        if(matchTl && matchL) {
+          if(rowBln === vsBefore && countsBefore[rowTgl] !== undefined) countsBefore[rowTgl]++;
+          if(rowBln === vsAfter && countsAfter[rowTgl] !== undefined) countsAfter[rowTgl]++;
+        }
+      });
+
+      const ctx = document.getElementById('tlVs').getContext('2d');
+      activeCharts['tlVs'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dates1to31,
+          datasets: [
+            { label: `Bulan ${vsBefore}`, data: dates1to31.map(d => countsBefore[d]), backgroundColor: '#FF0055', borderRadius: 4 },
+            { label: `Bulan ${vsAfter}`, data: dates1to31.map(d => countsAfter[d]), backgroundColor: '#1C2541', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true, labels: { color: '#1C2541', font: { weight: 'bold' } } } },
+          scales: {
+            y: { ticks: { color: '#1C2541', stepSize: 1 }, beginAtZero: true, title: { display: true, text: 'Jumlah Tiket', color: '#1C2541', font: { weight: 'bold' } } },
+            x: { ticks: { color: '#1C2541', font: { weight: 'bold' } } }
+          }
+        }
+      });
+    }
+
+    // --- RENDER PERINGKAT TABEL AGENT (MURNI ASLI) ---
+    function renderAgentRankTable(data) {
+      const tbody = document.getElementById('topAgentBody');
+      tbody.innerHTML = "";
+      
+      if(data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center empty-state py-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Tidak ada data temuan yang cocok dengan filter.</td></tr>`;
+        return;
+      }
+
+      // Grouping data berdasarkan Nama Agent (Kolom G / Indeks ke-6)
+      let agentMap = {};
+      data.forEach(row => {
+        let name = String(row[6]).trim();
+        if(!name) return;
+        if(!agentMap[name]) {
+          agentMap[name] = { count: 0, unit: String(row[9]).trim() };
+        }
+        agentMap[name].count++;
+      });
+
+      let sortedAgents = Object.entries(agentMap).sort((a, b) => b[1].count - a[1].count);
+
+      if(sortedAgents.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center empty-state py-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Tidak ada data agent ditemukan.</td></tr>`;
+        return;
+      }
+
+      const escapeHtml = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+
+      sortedAgents.forEach((item, index) => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="badge badge-solid-gray px-2 py-2">${index + 1}</span></td>
+          <td><span class="agent-name-style">${escapeHtml(item[0])}</span></td>
+          <td><span class="unit-name-style">${escapeHtml(item[1].unit || '-')}</span></td>
+          <td class="text-end fw-bold">
+            <span class="clickable-ticket" onclick="showAgentPopupDetail('${escapeHtml(item[0])}')">${item[1].count} Tiket</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- POPUP HANDLER DETIL TIKET MODAL ---
+    function showAgentPopupDetail(agentName) {
+      document.getElementById('modalAgentTitle').innerText = "Detail Temuan Bad Ticket: " + agentName;
+      
+      let matchedDetails = currentFilteredRecords.filter(row => String(row[6]).trim() === agentName);
+      document.getElementById('modalTotalCount').innerText = "Total: " + matchedDetails.length + " tiket";
+      
+      let tbody = document.getElementById('modalTableBody');
+      tbody.innerHTML = "";
+      
+      matchedDetails.forEach(row => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row[0] || '-'}</td>
+          <td>${row[1] || '-'}</td>
+          <td><strong>${row[6] || '-'}</strong></td>
+          <td>${row[9] || '-'}</td>
+          <td><span class="badge bg-secondary">${row[4] || '-'}</span></td>
+          <td><small>${row[10] || '-'}</small></td>
+          <td><span class="badge bg-danger">${row[11] || '-'}</span></td>
+          <td><small>${row[12] || '-'}</small></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      let modalEl = new bootstrap.Modal(document.getElementById('agentDetailModal'));
+      modalEl.show();
+    }
+
+    // --- FUNGSI DOWNLOAD GAMBAR PNG (HTML2CANVAS) ---
+    function downloadChartPng(chartKey, filename) {
+      if(!activeCharts[chartKey]) return;
+      const base64 = activeCharts[chartKey].toBase64Image();
+      const link = document.createElement('a');
+      link.download = `${filename}.png`;
+      link.href = base64;
+      link.click();
+    }
+
+    function downloadTableAsPng() {
+      const el = document.getElementById('topAgentTable').closest('.card-custom');
+      html2canvas(el, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'Data_Keseluruhan_Bad_Tiket_Agent.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch((e) => {
+        console.error(e);
+        alert("Gagal memproses ekspor tabel ke gambar PNG.");
+      });
+    }
+  </script>
+</body>
+</html>
